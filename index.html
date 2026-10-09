@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Supply Chain Optimization demo prototype for AI FUSION 2026 - Team RSG." />
+  <title>Supply Chain Intelligence | TEAM RSG</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">SC</div>
+        <div><strong>SupplyIQ</strong><span>TEAM RSG · AI FUSION 2026</span></div>
+      </div>
+      <div class="workspace-label">WORKSPACE</div>
+      <nav class="nav-list" aria-label="Main navigation">
+        <button class="nav-item active" data-view="overview"><span>▦</span> Overview</button>
+        <button class="nav-item" data-view="inventory"><span>▤</span> Inventory</button>
+        <button class="nav-item" data-view="forecast"><span>⌁</span> Demand Forecast</button>
+        <button class="nav-item" data-view="shipments"><span>⇢</span> Shipments & Routes</button>
+        <button class="nav-item" data-view="alerts"><span>⚑</span> Risk Alerts <b class="nav-count" id="navAlertCount">0</b></button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="pilot-card">
+          <div class="pilot-icon">✦</div>
+          <strong>Optimization workspace</strong>
+          <p>Explore inventory, demand and shipment decisions in one place.</p>
+          <span class="demo-pill">DEMO PROTOTYPE</span>
+        </div>
+        <div class="team-credit">Built for <strong>AI FUSION 2026</strong><br />TEAM RSG</div>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobileMenu" aria-label="Toggle navigation">☰</button>
+        <div class="breadcrumb">Workspace <span>/</span> <strong id="breadcrumbCurrent">Overview</strong></div>
+        <div class="topbar-right">
+          <span class="status-dot"></span><span class="live-label">Local demo data</span>
+          <button class="icon-button" id="resetDemo" title="Reset demo data" aria-label="Reset demo data">↻</button>
+          <div class="avatar">RSG</div>
+        </div>
+      </header>
+
+      <section class="page-view active" id="view-overview">
+        <div class="page-heading">
+          <div><p class="eyebrow">SUPPLY CHAIN INTELLIGENCE</p><h1>Good morning, Team RSG <span>✦</span></h1><p class="subheading">See your operation clearly. Decide what to do next.</p></div>
+          <button class="primary-button" data-open-view="inventory">＋ Manage inventory</button>
+        </div>
+        <div class="notice"><span class="notice-icon">i</span><div><strong>Prototype mode</strong><p>Numbers and recommendations are calculated from sample data stored in this browser. This is not a live ERP, GPS feed, or trained machine-learning model.</p></div><button class="notice-close" id="dismissNotice" aria-label="Dismiss notice">×</button></div>
+        <div class="kpi-grid">
+          <article class="kpi-card"><div class="kpi-top"><span>Total SKUs</span><span class="kpi-icon violet">▤</span></div><strong id="kpiSkus">—</strong><small>Products tracked</small></article>
+          <article class="kpi-card"><div class="kpi-top"><span>Inventory value</span><span class="kpi-icon blue">₹</span></div><strong id="kpiValue">—</strong><small>At unit cost</small></article>
+          <article class="kpi-card"><div class="kpi-top"><span>Open shipments</span><span class="kpi-icon orange">⇢</span></div><strong id="kpiShipments">—</strong><small>Not yet delivered</small></article>
+          <article class="kpi-card"><div class="kpi-top"><span>Stock risks</span><span class="kpi-icon red">⚑</span></div><strong id="kpiRisks">—</strong><small>At or below reorder point</small></article>
+        </div>
+        <div class="content-grid">
+          <article class="panel forecast-panel">
+            <div class="panel-heading"><div><h2>Demand overview</h2><p>Sample monthly demand · units</p></div><span class="mini-tag">BASELINE</span></div>
+            <div class="chart-legend"><span><i class="legend-dot"></i> Observed demand</span><span><i class="legend-dot forecast-dot"></i> Baseline forecast</span></div>
+            <div class="chart-wrap"><canvas id="demandChart" aria-label="Demand chart" role="img"></canvas></div>
+            <div class="chart-foot"><span>Illustrative sample series</span><button class="text-button" data-open-view="forecast">Open forecast →</button></div>
+          </article>
+          <article class="panel">
+            <div class="panel-heading"><div><h2>Needs attention</h2><p>Generated from current demo data</p></div><button class="text-button" data-open-view="alerts">View all →</button></div>
+            <div class="attention-list" id="attentionList"></div>
+          </article>
+        </div>
+        <article class="panel table-panel">
+          <div class="panel-heading"><div><h2>Inventory snapshot</h2><p>Products closest to their reorder threshold</p></div><button class="text-button" data-open-view="inventory">View inventory →</button></div>
+          <div class="table-scroll"><table><thead><tr><th>Product</th><th>SKU</th><th>Available</th><th>Reorder point</th><th>Status</th></tr></thead><tbody id="overviewInventory"></tbody></table></div>
+        </article>
+      </section>
+
+      <section class="page-view" id="view-inventory">
+        <div class="page-heading"><div><p class="eyebrow">STOCK CONTROL</p><h1>Inventory management</h1><p class="subheading">Track stock, unit cost and replenishment thresholds.</p></div><button class="primary-button" id="addProductBtn">＋ Add product</button></div>
+        <div class="filter-row"><label class="search-box">⌕ <input id="inventorySearch" placeholder="Search products or SKU..." /></label><select id="inventoryFilter" aria-label="Filter inventory"><option value="all">All products</option><option value="risk">Needs restock</option><option value="healthy">Healthy stock</option></select></div>
+        <article class="panel table-panel"><div class="table-scroll"><table><thead><tr><th>Product</th><th>SKU</th><th>Available</th><th>Reorder point</th><th>Unit cost</th><th>Status</th><th>Actions</th></tr></thead><tbody id="inventoryTable"></tbody></table></div><div class="empty-state hidden" id="inventoryEmpty">No products match this filter.</div></article>
+        <p class="helper-note">Tip: reduce a product's stock below its reorder point to see a risk alert appear.</p>
+      </section>
+
+      <section class="page-view" id="view-forecast">
+        <div class="page-heading"><div><p class="eyebrow">PREDICTIVE PLANNING</p><h1>Demand forecast</h1><p class="subheading">Estimate upcoming demand using a transparent baseline method.</p></div><span class="method-tag">Moving average · demo baseline</span></div>
+        <div class="notice"><span class="notice-icon">i</span><div><strong>Not a trained AI/ML model</strong><p>This demo uses the average of recent demand inputs as a baseline. Replace it with a validated model when reliable historical data is available.</p></div></div>
+        <div class="forecast-layout">
+          <article class="panel form-panel"><div class="panel-heading"><div><h2>Forecast inputs</h2><p>Enter recent demand values (units)</p></div></div>
+            <form id="forecastForm" class="stack-form">
+              <label>Product<select id="forecastProduct" required></select></label>
+              <label>Recent demand values <span class="field-hint">comma-separated, e.g. 120, 135, 128, 142</span><textarea id="demandInput" rows="4" required>120, 135, 128, 142, 150, 146</textarea></label>
+              <label>Periods to forecast<select id="forecastPeriods"><option value="3">Next 3 periods</option><option value="6">Next 6 periods</option><option value="12">Next 12 periods</option></select></label>
+              <button class="primary-button full-width" type="submit">Calculate baseline forecast</button>
+            </form>
+          </article>
+          <article class="panel results-panel"><div class="panel-heading"><div><h2>Forecast result</h2><p id="forecastSubtitle">Run a forecast to see results</p></div><span class="mini-tag">BASELINE</span></div><div id="forecastResult" class="forecast-result empty-result"><div class="result-placeholder">⌁</div><strong>Ready to calculate</strong><p>Results will appear here using the values you enter.</p></div></article>
+        </div>
+      </section>
+
+      <section class="page-view" id="view-shipments">
+        <div class="page-heading"><div><p class="eyebrow">LOGISTICS OPERATIONS</p><h1>Shipments & routes</h1><p class="subheading">Create sample shipments and compare route cost/time estimates.</p></div><button class="primary-button" id="addShipmentBtn">＋ Create shipment</button></div>
+        <div class="notice"><span class="notice-icon">i</span><div><strong>Planning estimate only</strong><p>Distance, cost and transit duration are manually entered demo estimates. No live maps, traffic or carrier APIs are connected.</p></div></div>
+        <article class="panel table-panel"><div class="panel-heading"><div><h2>Shipment register</h2><p>Track the status of each shipment</p></div><select id="shipmentFilter" aria-label="Filter shipments"><option value="all">All statuses</option><option>Planned</option><option>In transit</option><option>Delivered</option><option>Delayed</option></select></div><div class="table-scroll"><table><thead><tr><th>Shipment</th><th>Route</th><th>Distance</th><th>Est. cost</th><th>ETA</th><th>Status</th><th>Actions</th></tr></thead><tbody id="shipmentTable"></tbody></table></div><div class="empty-state hidden" id="shipmentEmpty">No shipments match this filter.</div></article>
+        <div class="route-cards" id="routeCards"></div>
+      </section>
+
+      <section class="page-view" id="view-alerts">
+        <div class="page-heading"><div><p class="eyebrow">EXCEPTION MANAGEMENT</p><h1>Risk alerts</h1><p class="subheading">Actionable flags based on stock thresholds and shipment statuses.</p></div><button class="secondary-button" id="refreshAlerts">↻ Refresh alerts</button></div>
+        <div class="kpi-grid compact-kpis"><article class="kpi-card"><div class="kpi-top"><span>Open alerts</span><span class="kpi-icon red">⚑</span></div><strong id="alertOpenCount">—</strong><small>Requires review</small></article><article class="kpi-card"><div class="kpi-top"><span>Stock alerts</span><span class="kpi-icon orange">▤</span></div><strong id="alertStockCount">—</strong><small>Reorder threshold</small></article><article class="kpi-card"><div class="kpi-top"><span>Shipment alerts</span><span class="kpi-icon blue">⇢</span></div><strong id="alertShipmentCount">—</strong><small>Delayed shipments</small></article></div>
+        <article class="panel"><div class="panel-heading"><div><h2>Alert center</h2><p>Generated from your current local data</p></div></div><div id="alertList" class="alert-list"></div></article>
+      </section>
+
+      <footer class="footer"><span>SupplyIQ · AI FUSION 2026</span><span>TEAM RSG · Frontend demonstration prototype</span></footer>
+    </main>
+  </div>
+
+  <dialog id="productDialog" class="modal">
+    <form id="productForm" method="dialog">
+      <div class="modal-heading"><div><p class="eyebrow">INVENTORY</p><h2 id="productDialogTitle">Add product</h2></div><button type="button" class="modal-close" data-close="productDialog" aria-label="Close">×</button></div>
+      <input type="hidden" id="productId" />
+      <label>Product name<input id="productName" required maxlength="70" placeholder="e.g. Industrial fasteners" /></label>
+      <label>SKU<input id="productSku" required maxlength="24" placeholder="e.g. SKU-104" /></label>
+      <div class="form-two"><label>Available stock<input id="productStock" type="number" min="0" required /></label><label>Reorder point<input id="productReorder" type="number" min="0" required /></label></div>
+      <label>Unit cost (₹)<input id="productCost" type="number" min="0" step="0.01" required /></label>
+      <div class="modal-actions"><button type="button" class="secondary-button" data-close="productDialog">Cancel</button><button type="submit" class="primary-button">Save product</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="shipmentDialog" class="modal">
+    <form id="shipmentForm" method="dialog">
+      <div class="modal-heading"><div><p class="eyebrow">LOGISTICS</p><h2>Create shipment</h2></div><button type="button" class="modal-close" data-close="shipmentDialog" aria-label="Close">×</button></div>
+      <label>Shipment name<input id="shipmentName" required maxlength="70" placeholder="e.g. Chennai warehouse replenishment" /></label>
+      <div class="form-two"><label>Origin<input id="shipmentOrigin" required placeholder="Chennai" /></label><label>Destination<input id="shipmentDestination" required placeholder="Coimbatore" /></label></div>
+      <div class="form-two"><label>Distance (km)<input id="shipmentDistance" type="number" min="1" required placeholder="500" /></label><label>Estimated cost (₹)<input id="shipmentCost" type="number" min="0" required placeholder="12000" /></label></div>
+      <div class="form-two"><label>Transit time (hours)<input id="shipmentEta" type="number" min="1" required placeholder="10" /></label><label>Status<select id="shipmentStatus"><option>Planned</option><option>In transit</option><option>Delivered</option><option>Delayed</option></select></label></div>
+      <div class="modal-actions"><button type="button" class="secondary-button" data-close="shipmentDialog">Cancel</button><button type="submit" class="primary-button">Save shipment</button></div>
+    </form>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
